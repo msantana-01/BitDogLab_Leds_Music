@@ -7,12 +7,13 @@
 #include "ws2818b.pio.h"
 
 // Configurações
-#define LED_COUNT 25                // Número de LEDs (matriz 5x5)
-#define LED_PIN 7                   // Pino GPIO conectado aos LEDs
-#define BUZZER_PIN 21               // Pino GPIO conectado ao buzzer
+#define LED_COUNT 25  // Número de LEDs (matriz 5x5)
+#define LED_PIN 7     // Pino GPIO conectado aos LEDs
+#define BUZZER_PIN 21 // Pino GPIO conectado ao buzzer
 
-struct pixel_t {
-    uint8_t G, R, B;                // Componentes de cor: Verde, Vermelho, Azul
+struct pixel_t
+{
+    uint8_t G, R, B; // Componentes de cor: Verde, Vermelho, Azul
 };
 
 typedef struct pixel_t pixel_t;
@@ -52,33 +53,30 @@ uint sm;
 // Definição para descanso (pausa)
 #define REST 0
 
-
 // Duração das notas (em ms)
-#define WHOLE_NOTE    1000
-#define HALF_NOTE     500
-#define QUARTER_NOTE  250
-#define EIGHTH_NOTE   125
-
+#define WHOLE_NOTE 1000
+#define HALF_NOTE 500
+#define QUARTER_NOTE 250
+#define EIGHTH_NOTE 125
 
 int melody[] = {
     NOTE_FS5, NOTE_FS5, NOTE_D5, NOTE_B4, REST, NOTE_B4, REST, NOTE_E5, REST,
-    NOTE_E5, REST, NOTE_E5, NOTE_GS5, NOTE_GS5, NOTE_A5, NOTE_B5, NOTE_A5, 
+    NOTE_E5, REST, NOTE_E5, NOTE_GS5, NOTE_GS5, NOTE_A5, NOTE_B5, NOTE_A5,
     NOTE_A5, NOTE_A5, NOTE_E5, REST, NOTE_D5, REST, NOTE_FS5, REST, NOTE_FS5,
-    REST, NOTE_FS5, NOTE_E5, NOTE_E5, NOTE_FS5, NOTE_E5, REST, REST
-};
+    REST, NOTE_FS5, NOTE_E5, NOTE_E5, NOTE_FS5, NOTE_E5, REST, REST};
 
 // Duração das notas
 int durations[] = {
-    EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, 
-    EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, 
-    EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, 
-    EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, 
     EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE,
-    EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE
-};
+    EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE,
+    EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE,
+    EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE,
+    EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE,
+    EIGHTH_NOTE, EIGHTH_NOTE, EIGHTH_NOTE};
 
 // Função para configurar e tocar uma nota
-void set_pwm_pin(uint pin, uint freq, uint duty_c) { // duty_c entre 0 e 10000
+void set_pwm_pin(uint pin, uint freq, uint duty_c)
+{ // duty_c entre 0 e 10000
     gpio_set_function(pin, GPIO_FUNC_PWM);
     uint slice_num = pwm_gpio_to_slice_num(pin);
     pwm_config config = pwm_get_default_config();
@@ -86,22 +84,27 @@ void set_pwm_pin(uint pin, uint freq, uint duty_c) { // duty_c entre 0 e 10000
     pwm_config_set_clkdiv(&config, div);
     pwm_config_set_wrap(&config, 10000);
     pwm_init(slice_num, &config, true); // Inicia o PWM com a configuração
-    pwm_set_gpio_level(pin, duty_c);   // Define o nível do ciclo de trabalho
+    pwm_set_gpio_level(pin, duty_c);    // Define o nível do ciclo de trabalho
 }
 
 // Função para tocar a música
-void tocar_musica() {
+void tocar_musica()
+{
     uint buzzer_pin = 21; // Pino conectado ao buzzer
 
     // Toca a melodia
-    for (int i = 0; i < sizeof(melody) / sizeof(int); i++) {
+    for (int i = 0; i < sizeof(melody) / sizeof(int); i++)
+    {
         int freq = melody[i];
         int duration = durations[i];
 
-        if (freq > 0) {
+        if (freq > 0)
+        {
             // Configura e toca a nota com 50% de duty cycle
             set_pwm_pin(buzzer_pin, freq, 5000);
-        } else {
+        }
+        else
+        {
             // Pausa (silêncio)
             pwm_set_gpio_level(buzzer_pin, 0);
         }
@@ -116,17 +119,20 @@ void tocar_musica() {
 }
 
 // Inicialização dos LEDs
-void npInit(uint pin) {
+void npInit(uint pin)
+{
     uint offset = pio_add_program(pio0, &ws2818b_program);
     np_pio = pio0;
     sm = pio_claim_unused_sm(np_pio, false);
-    if (sm < 0) {
+    if (sm < 0)
+    {
         np_pio = pio1;
         sm = pio_claim_unused_sm(np_pio, true);
     }
     ws2818b_program_init(np_pio, sm, offset, pin, 800000.f);
 
-    for (uint i = 0; i < LED_COUNT; ++i) {
+    for (uint i = 0; i < LED_COUNT; ++i)
+    {
         leds[i].R = 0;
         leds[i].G = 0;
         leds[i].B = 0;
@@ -134,21 +140,25 @@ void npInit(uint pin) {
 }
 
 // Define um LED com cores específicas
-void npSetLED(const uint index, const uint8_t r, const uint8_t g, const uint8_t b) {
+void npSetLED(const uint index, const uint8_t r, const uint8_t g, const uint8_t b)
+{
     leds[index].R = r * 0.3;
     leds[index].G = g * 0.3;
     leds[index].B = b * 0.3;
 }
 
 // Limpa todos os LEDs
-void npClear() {
+void npClear()
+{
     for (uint i = 0; i < LED_COUNT; ++i)
         npSetLED(i, 0, 0, 0);
 }
 
 // Atualiza o hardware dos LEDs
-void npWrite() {
-    for (uint i = 0; i < LED_COUNT; ++i) {
+void npWrite()
+{
+    for (uint i = 0; i < LED_COUNT; ++i)
+    {
         pio_sm_put_blocking(np_pio, sm, leds[i].G);
         pio_sm_put_blocking(np_pio, sm, leds[i].R);
         pio_sm_put_blocking(np_pio, sm, leds[i].B);
@@ -156,26 +166,28 @@ void npWrite() {
 }
 
 // Mostra letras para formar "LOVE"
-void drawLetterL() {
+void drawLetterL()
+{
     npClear();
-    npSetLED(1, 255, 0, 0); // Parte vertical
+    npSetLED(1, 255, 0, 0); 
     npSetLED(2, 255, 0, 0);
     npSetLED(3, 255, 0, 0);
     npSetLED(6, 255, 0, 0);
-    npSetLED(13, 255, 0, 0); // Parte horizontal
-    npSetLED(16, 255, 0, 0); // Parte horizontal
-    npSetLED(23, 255, 0, 0); // Parte horizontal
+    npSetLED(13, 255, 0, 0); 
+    npSetLED(16, 255, 0, 0); 
+    npSetLED(23, 255, 0, 0);
     npWrite();
     sleep_ms(1000);
 }
 
-void drawLetterO() {
+void drawLetterO()
+{
     npClear();
-    npSetLED(1, 0, 255, 0); // Parte superior
+    npSetLED(1, 0, 255, 0);
     npSetLED(2, 0, 255, 0);
-    npSetLED(3, 0, 255, 0); // Laterais
+    npSetLED(3, 0, 255, 0); 
     npSetLED(6, 0, 255, 0);
-    npSetLED(13, 0, 255, 0); // Parte inferior
+    npSetLED(13, 0, 255, 0); 
     npSetLED(16, 0, 255, 0);
     npSetLED(23, 0, 255, 0);
     npSetLED(22, 0, 255, 0);
@@ -187,13 +199,14 @@ void drawLetterO() {
     sleep_ms(1000);
 }
 
-void drawLetterV() {
+void drawLetterV()
+{
     npClear();
-    npSetLED(24, 0, 0, 255); // Parte superior
+    npSetLED(24, 0, 0, 255); 
     npSetLED(16, 0, 0, 255);
-    npSetLED(13, 0, 0, 255); // Parte central
+    npSetLED(13, 0, 0, 255);
     npSetLED(7, 0, 0, 255);
-    npSetLED(2, 0, 0, 255); // Inferior
+    npSetLED(2, 0, 0, 255);
     npSetLED(11, 0, 0, 255);
     npSetLED(18, 0, 0, 255);
     npSetLED(20, 0, 0, 255);
@@ -201,28 +214,31 @@ void drawLetterV() {
     sleep_ms(1000);
 }
 
-void drawLetterE() {
+void drawLetterE()
+{
     npClear();
-    npSetLED(1, 255, 255, 0); // Vertical
+    npSetLED(1, 255, 255, 0); 
     npSetLED(2, 255, 255, 0);
     npSetLED(3, 255, 255, 0);
     npSetLED(6, 255, 255, 0);
     npSetLED(16, 255, 255, 0);
-    npSetLED(13, 255, 255, 0); // Superior
+    npSetLED(13, 255, 255, 0); 
     npSetLED(12, 255, 255, 0);
-    npSetLED(11, 255, 255, 0); // Central
+    npSetLED(11, 255, 255, 0); 
     npSetLED(23, 255, 255, 0);
-    npSetLED(22, 255, 255, 0); // Inferior
+    npSetLED(22, 255, 255, 0); 
     npSetLED(21, 255, 255, 0);
     npWrite();
     sleep_ms(1000);
 }
 
-void drawCoracao() {
-    for (int i = 0; i < 3; i++) {  // Piscar 3 vezes
+void drawCoracao()
+{
+    for (int i = 0; i < 3; i++)
+    { // Piscar 3 vezes
         // Desenha o coração
         npClear();
-        npSetLED(23, 255, 0, 0); // Vermelho
+        npSetLED(23, 255, 0, 0); 
         npSetLED(21, 255, 0, 0);
         npSetLED(15, 255, 0, 0);
         npSetLED(17, 255, 0, 0);
@@ -232,25 +248,26 @@ void drawCoracao() {
         npSetLED(6, 255, 0, 0);
         npSetLED(8, 255, 0, 0);
         npSetLED(2, 255, 0, 0);
-        npSetLED(16, 255, 102, 204); // Rosa
+        npSetLED(16, 255, 102, 204); 
         npSetLED(18, 255, 102, 204);
         npSetLED(13, 255, 102, 204);
         npSetLED(12, 255, 102, 204);
         npSetLED(11, 255, 102, 204);
         npSetLED(7, 255, 102, 204);
         npWrite();
-        sleep_ms(500);  // Coração visível por 500 ms
+        sleep_ms(500); // Coração visível por 500 ms
 
         // Apaga todos os LEDs
         npClear();
         npWrite();
-        sleep_ms(200);  // Coração apagado por 500 ms
+        sleep_ms(200); // Coração apagado por 500 ms
     }
 }
 
 // Exibe bandeira arco-íris, linha por linha
-void rainbowFlag() {
-    
+void rainbowFlag()
+{
+
     uint8_t colors[5][3] = {
         {255, 0, 0},   // Vermelho
         {255, 165, 0}, // Laranja
@@ -259,23 +276,27 @@ void rainbowFlag() {
         {0, 0, 255}    // Azul
     };
 
-    for (int row = 0; row < 5; row++) {
-        for (int col = 0; col < 5; col++) {
+    for (int row = 0; row < 5; row++)
+    {
+        for (int col = 0; col < 5; col++)
+        {
             // Calcula o índice e acende os LEDs da linha atual
             npSetLED(row * 5 + col, colors[row][0], colors[row][1], colors[row][2]);
         }
-        npWrite();         // Atualiza os LEDs da linha atual
-        sleep_ms(500);     // Espera 500 ms antes de passar para a próxima linha
+        npWrite();     // Atualiza os LEDs da linha atual
+        sleep_ms(500); // Espera 500 ms antes de passar para a próxima linha
     }
 
-    sleep_ms(1000);         // Mantém a bandeira acesa por 2 segundos
+    sleep_ms(1000); // Mantém a bandeira acesa por 2 segundos
 }
 
-
 // Função para gerar uma onda de arco-íris
-void rainbowWave() {
-    for (int t = 0; t < LED_COUNT; t++) {
-        for (int i = 0; i < LED_COUNT; i++) {
+void rainbowWave()
+{
+    for (int t = 0; t < LED_COUNT; t++)
+    {
+        for (int i = 0; i < LED_COUNT; i++)
+        {
             uint8_t r = (i + t) % 3 == 0 ? 255 : 0; // Vermelho em padrão cíclico
             uint8_t g = (i + t) % 3 == 1 ? 255 : 0; // Verde em padrão cíclico
             uint8_t b = (i + t) % 3 == 2 ? 255 : 0; // Azul em padrão cíclico
@@ -287,7 +308,8 @@ void rainbowWave() {
 }
 
 // Animação principal
-void animate() {
+void animate()
+{
     rainbowFlag();
     drawLetterL();
     drawLetterO();
@@ -298,14 +320,17 @@ void animate() {
     npClear();
 }
 
-void music_thread() {
-    while (true) {
+void music_thread()
+{
+    while (true)
+    {
         tocar_musica();
-        //sleep_ms(2000); // Pausa entre as músicas
+        // sleep_ms(2000); // Pausa entre as músicas
     }
 }
 
-int main() {
+int main()
+{
     stdio_init_all();
     npInit(LED_PIN);
     gpio_init(BUZZER_PIN);
@@ -314,7 +339,8 @@ int main() {
     // Cria uma thread para executar a música em segundo plano
     multicore_launch_core1(music_thread);
 
-    while (true) {
+    while (true)
+    {
         animate(); // Exibir LOVE seguido da bandeira
     }
 }
